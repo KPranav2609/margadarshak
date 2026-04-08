@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
-import ProgressBar from "../components/ProgressBar";
-import StatCard from "../components/StatCard";
+import XPCard from "../components/XPCard";
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const fetchDashboard = async () => {
     try {
       const { data } = await API.get("/dashboard");
       setStats(data);
-    } catch (err) {
-      console.error("Error fetching dashboard:", err.message);
-      setError("Failed to load dashboard");
+    } catch (error) {
+      console.error("Error fetching dashboard:", error.message);
+      setStats(null); // safety
     } finally {
       setLoading(false);
     }
@@ -24,8 +22,8 @@ const Dashboard = () => {
     fetchDashboard();
   }, []);
 
-  // 🔄 Loading State
-  if (loading) {
+  // ✅ FIX: prevent crash when stats is null
+  if (loading || !stats) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
         Loading...
@@ -33,74 +31,70 @@ const Dashboard = () => {
     );
   }
 
-  // ❌ Error State
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-red-400 flex items-center justify-center">
-        {error}
+  return (
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <h1 className="text-3xl font-bold mb-6 tracking-wide">
+        Dashboard
+      </h1>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition duration-300">
+          <h2 className="text-lg">Total Tasks</h2>
+          <p className="text-2xl font-bold">{stats.total}</p>
+        </div>
+
+        <div className="bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition duration-300">
+          <h2 className="text-lg">Completed</h2>
+          <p className="text-2xl font-bold text-green-400">
+            {stats.completed}
+          </p>
+        </div>
+
+        <div className="bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition duration-300">
+          <h2 className="text-lg">Remaining</h2>
+          <p className="text-2xl font-bold text-red-400">
+            {stats.remaining}
+          </p>
+        </div>
       </div>
-    );
-  }
 
-  // ⚠️ Safety Check
-  if (!stats) {
-    return null;
-  }
+      {/* XP System */}
+      <div className="mt-6">
+        <XPCard completed={stats.completed} />
+      </div>
 
-  // ✅ Success UI
- return (
-  <div className="min-h-screen bg-gray-900 text-white p-6">
-    <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+      {/* Category Progress */}
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        {Object.entries(stats.categoryStats).map(([key, value]) => {
+          const percent = value.total
+            ? (value.completed / value.total) * 100
+            : 0;
 
-    {/* Top Stats */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-  <StatCard title="Total Tasks" value={stats.total} />
+          return (
+            <div
+              key={key}
+              className="bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition duration-300"
+            >
+              <h2 className="text-lg capitalize mb-2">{key}</h2>
 
-  <StatCard
-    title="Completed"
-    value={stats.completed}
-    color="text-green-400"
-  />
+              <p className="text-sm text-gray-400 mb-2">
+                {value.completed} / {value.total} completed
+              </p>
 
-  <StatCard
-    title="Remaining"
-    value={stats.remaining}
-    color="text-red-400"
-  />
-</div>
-
-    {/* Category Progress */}
-    <div className="bg-gray-800 p-6 rounded-xl shadow">
-      <h2 className="text-xl font-semibold mb-4">Category Progress</h2>
-
-      <div className="space-y-4">
-        <div>
-          <p className="mb-1">Coding</p>
-          <ProgressBar
-            value={stats.categoryStats.coding.completed}
-            total={stats.categoryStats.coding.total}
-          />
-        </div>
-
-        <div>
-          <p className="mb-1">Aptitude</p>
-          <ProgressBar
-            value={stats.categoryStats.aptitude.completed}
-            total={stats.categoryStats.aptitude.total}
-          />
-        </div>
-
-        <div>
-          <p className="mb-1">Interview</p>
-          <ProgressBar
-            value={stats.categoryStats.interview.completed}
-            total={stats.categoryStats.interview.total}
-          />
-        </div>
+              {/* Progress bar */}
+              <div className="w-full bg-gray-700 h-2 rounded overflow-hidden">
+                <div
+                  className="bg-green-500 h-2 rounded transition-all duration-500"
+                  style={{ width: `${percent}%` }}
+                ></div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default Dashboard;
