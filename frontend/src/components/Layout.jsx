@@ -1,7 +1,13 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Rocket } from "lucide-react";
+
+import { useAuth } from "../context/AuthContext";
+import { ui } from "../styles/ui";
 
 const Layout = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const navItems = [
     { name: "Dashboard", path: "/" },
@@ -9,44 +15,68 @@ const Layout = ({ children }) => {
     { name: "Mentor", path: "/mentor" },
   ];
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
-    <div className="flex min-h-screen bg-gray-900 text-white">
+    <div className={ui.layout}>
       {/* Sidebar */}
-      <div className="w-64 bg-gray-800 p-6 shadow-lg">
-        <h1 className="text-2xl font-bold mb-8 tracking-wide">MargaDarshak</h1>
+      <aside className={ui.sidebar}>
+        <div className={ui.sidebarGlass} />
 
-        <nav className="space-y-4">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+        <div className={ui.sidebarContent}>
+          <div>
+            {/* Logo */}
+            <div className={ui.brandContainer}>
+              <div className={ui.brandRow}>
+                <Rocket className={ui.logoIcon} />
 
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`block px-4 py-2 rounded transition duration-200 ${
-                  isActive
-                    ? "bg-blue-600 shadow-md"
-                    : "hover:bg-gray-700 hover:translate-x-1"
-                }`}
-              >
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
-        <button
-          onClick={() => {
-            localStorage.removeItem("userInfo");
-            window.location.href = "/login";
-          }}
-          className="mt-10 w-full bg-red-500 py-2 rounded hover:bg-red-600 transition duration-200"
-        >
-          Logout
-        </button>
-      </div>
+                <h1 className={ui.brandTitle}>MargaDarshak</h1>
+              </div>
+
+              <p className={ui.brandSubtitle}>
+                Your personal growth companion
+              </p>
+            </div>
+
+            {/* Navigation */}
+            <nav className={ui.nav}>
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`${ui.navItem} ${
+                      isActive ? ui.activeNav : ui.inactiveNav
+                    }`}
+                  >
+                    {isActive && <span className={ui.navIndicator} />}
+
+                    <span
+                      className={`${ui.navBackground} ${
+                        isActive ? ui.activeNavBg : ui.inactiveNavBg
+                      }`}
+                    />
+
+                    <span className={ui.navText}>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          <button onClick={handleLogout} className={ui.btnDanger}>
+            Logout
+          </button>
+        </div>
+      </aside>
 
       {/* Main Content */}
-      <div className="flex-1 p-6">{children}</div>
+      <main className={ui.main}>{children}</main>
     </div>
   );
 };

@@ -1,15 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import API from "../services/api";
+import { useAuth } from "../context/AuthContext";
+
+import Logo from "../components/Logo";
+
+import { ui } from "../styles/ui";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
 
     try {
       const { data } = await API.post("/auth/login", {
@@ -17,47 +26,90 @@ const Login = () => {
         password,
       });
 
-      // ✅ Save user + token
-      localStorage.setItem("userInfo", JSON.stringify(data));
-
-      // ✅ Redirect
+      login(data);
       navigate("/");
-    } catch (err) {
-      alert("Invalid credentials");
+    } catch {
+      setError("Invalid email or password");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-      <form 
+    <div className={ui.authContainer}>
+      {/* Background Glow */}
+
+      <div className={ui.authGlowLeft} />
+      <div className={ui.authGlowRight} />
+
+      <form
         onSubmit={handleLogin}
-        className="bg-gray-800 p-6 rounded-xl shadow-md w-80"
+        className={ui.authCard}
       >
-        <h2 className="text-xl font-bold mb-4">Login</h2>
+        {/* Logo */}
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-2 mb-3 rounded bg-gray-700"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <div className={ui.authLogo}>
+          <Logo center size="large" />
+        </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-2 mb-3 rounded bg-gray-700"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <h2 className={`${ui.cardTitle} text-center`}>
+          Welcome Back
+        </h2>
 
-        <button className="w-full bg-blue-500 py-2 rounded hover:bg-blue-600">
+        {/* Email */}
+
+        <div>
+          <label className={ui.label}>
+            Email
+          </label>
+
+          <input
+            type="email"
+            placeholder="Enter your email"
+            className={ui.input}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+
+        {/* Password */}
+
+        <div>
+          <label className={ui.label}>
+            Password
+          </label>
+
+          <input
+            type="password"
+            placeholder="Enter your password"
+            className={ui.input}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+
+        {/* Error */}
+
+        {error && (
+          <div className={ui.error}>
+            {error}
+          </div>
+        )}
+
+        {/* Login */}
+
+        <button
+          type="submit"
+          className={ui.authButton}
+        >
           Login
         </button>
-        <p className="text-sm mt-3 text-center">
+
+        {/* Footer */}
+
+        <p className={ui.authFooter}>
           Don't have an account?{" "}
+
           <span
-            className="text-blue-400 cursor-pointer"
+            className={ui.authLink}
             onClick={() => navigate("/register")}
           >
             Register

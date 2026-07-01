@@ -4,7 +4,11 @@ import UserTask from "../models/UserTask.js";
 
 export const askMentor = async (req, res) => {
   try {
-    const { question } = req.body;
+    const question = req.body.question?.trim();
+
+    if (!question) {
+      return res.status(400).json({ message: "Question is required" });
+    }
 
     // Get stats (reuse logic)
     const tasks = await Task.find();
@@ -27,7 +31,7 @@ export const askMentor = async (req, res) => {
     };
 
     tasks.forEach((task) => {
-      const isCompleted = taskMap[task._id] || false;
+      const isCompleted = taskMap[task._id.toString()] || false;
 
       if (isCompleted) completed++;
 

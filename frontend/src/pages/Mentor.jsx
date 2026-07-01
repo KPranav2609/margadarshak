@@ -1,12 +1,24 @@
 import { useState } from "react";
-import API from "../services/api";
+
+import useMentor from "../hooks/useMentor";
+
+import PageWrapper from "../components/PageWrapper";
+import SkeletonCard from "../components/SkeletonCard";
+
+import { ui } from "../styles/ui";
 
 const Mentor = () => {
   const [question, setQuestion] = useState("");
-  const [response, setResponse] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  // 🔥 Parse AI response
+  const { askMentor, response, loading } = useMentor();
+
+  const quickPrompts = [
+    "Explain Binary Search",
+    "How do I prepare for DBMS interview?",
+    "Explain JWT Authentication",
+    "Top HR Interview Questions",
+  ];
+
   const parseResponse = (text) => {
     const steps = {
       step1: "",
@@ -17,106 +29,161 @@ const Mentor = () => {
 
     if (!text) return steps;
 
-    const lines = text.split("\n");
+    let currentSection = "";
 
-    lines.forEach((line) => {
-      if (line.toLowerCase().startsWith("step 1")) {
-        steps.step1 = line.replace(/step 1[:\-]?\s*/i, "");
-      } else if (line.toLowerCase().startsWith("step 2")) {
-        steps.step2 = line.replace(/step 2[:\-]?\s*/i, "");
-      } else if (line.toLowerCase().startsWith("step 3")) {
-        steps.step3 = line.replace(/step 3[:\-]?\s*/i, "");
-      } else if (line.toLowerCase().startsWith("tips")) {
-        steps.tips = line.replace(/tips[:\-]?\s*/i, "");
+    text.split("\n").forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+
+      const stepMatch = trimmed.match(/^step\s*([123])[:-]?\s*(.*)$/i);
+      const tipsMatch = trimmed.match(/^tips[:-]?\s*(.*)$/i);
+
+      if (stepMatch) {
+        currentSection = `step${stepMatch[1]}`;
+        steps[currentSection] = stepMatch[2];
+        return;
+      }
+
+      if (tipsMatch) {
+        currentSection = "tips";
+        steps.tips = tipsMatch[1];
+        return;
+      }
+
+      if (currentSection) {
+        steps[currentSection] = `${steps[currentSection]} ${trimmed}`.trim();
       }
     });
 
     return steps;
   };
 
-  const askMentor = async () => {
-    if (!question.trim() || loading) return;
-
-    try {
-      console.log("Calling mentor API...");
-
-      setLoading(true);
-      setResponse("");
-
-      const { data } = await API.post("/ai/ask", {
-        question,
-      });
-
-      setResponse(data.response);
-    } catch (err) {
-      console.error(err);
-      setResponse("Something went wrong. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const parsed = parseResponse(response);
 
+  const handleAsk = () => {
+    if (!question.trim()) return;
+
+    askMentor(question);
+    setQuestion("");
+  };
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-3xl font-bold mb-6 tracking-wide">
-        AI Mentor
-      </h1>
+    <PageWrapper>
+      <div className={ui.chatContainer}>
+        {/* Header */}
 
-      {/* Input */}
-      <div className="bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-xl transition duration-300 mb-6">
-        <textarea
-          className="w-full p-3 rounded bg-gray-700 text-white focus:outline-none"
-          rows="3"
-          placeholder="Ask your doubt..."
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-        />
+        <div className="mb-5">
+          <h1 className={ui.pageTitle}>
+            AI Mentor
+          </h1>
 
-        <button
-          onClick={askMentor}
-          disabled={loading}
-          className={`mt-3 px-4 py-2 rounded shadow transition duration-200 ${
-            loading
-              ? "bg-gray-500 cursor-not-allowed"
-              : "bg-blue-500 hover:bg-blue-600 hover:scale-105"
-          }`}
-        >
-          {loading ? "Thinking..." : "Ask Mentor"}
-        </button>
-      </div>
+          <p className={ui.pageSubtitle}>
+            Ask anything and get step-by-step guidance 🚀
+          </p>
+        </div>
 
-      {/* 🔥 Structured Response UI */}
-      {response && (
-        <div className="space-y-4">
+        {/* Quick Prompts */}
 
-          {/* Step Cards */}
-          {[parsed.step1, parsed.step2, parsed.step3].map((step, i) => (
-            step && (
-              <div
-                key={i}
-                className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition duration-300"
-              >
-                <h3 className="font-semibold text-blue-400">
-                  Step {i + 1}
-                </h3>
-                <p className="text-gray-300 mt-1">{step}</p>
-              </div>
-            )
+        <div className="flex flex-wrap gap-3 mb-5">
+          {quickPrompts.map((prompt) => (
+            <button
+              key={prompt}
+              className={ui.quickPrompt}
+              onClick={() => setQuestion(prompt)}
+            >
+              {prompt}
+            </button>
           ))}
+        </div>
 
-          {/* Tips */}
-          {parsed.tips && (
-            <div className="bg-gray-800 p-4 rounded-xl border border-green-600 shadow-md hover:shadow-xl transform hover:-translate-y-1 transition duration-300">
-              <h3 className="font-semibold text-green-400">Tips</h3>
-              <p className="text-gray-300 mt-1">{parsed.tips}</p>
+        {/* Chat */}
+
+        <div className={ui.chatArea}>
+          {!loading && !response && (
+            <div className={ui.mentorWelcome}>
+              👋 Welcome!
+
+              <br />
+              <br />
+
+              Ask me anything about coding,
+              interviews, aptitude or placement
+              preparation.
             </div>
           )}
 
+          {loading && (
+            <>
+              <SkeletonCard className="h-24 w-full" />
+              <SkeletonCard className="h-24 w-5/6" />
+              <SkeletonCard className="h-20 w-4/6" />
+            </>
+          )}
+
+          {[parsed.step1, parsed.step2, parsed.step3].map(
+            (step, index) =>
+              step && (
+                <div
+                  key={index}
+                  className={ui.mentorCard}
+                >
+                  <h3 className={ui.stepTitle}>
+                    Step {index + 1}
+                  </h3>
+
+                  <p className="mt-2">
+                    {step}
+                  </p>
+                </div>
+              )
+          )}
+
+          {parsed.tips && (
+            <div className={ui.tipsCard}>
+              <h3 className={ui.tipsTitle}>
+                💡 Tips
+              </h3>
+
+              <p className="mt-2">
+                {parsed.tips}
+              </p>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+
+        {/* Input */}
+
+        <div className="mt-5">
+          <div className={ui.glassInput}>
+            <textarea
+              rows="1"
+              value={question}
+              placeholder="Ask your doubt..."
+              className={ui.textarea}
+              onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleAsk();
+                }
+              }}
+            />
+
+            <button
+              onClick={handleAsk}
+              disabled={loading}
+              className={`${ui.askButton} ${
+                loading
+                  ? ui.askButtonLoading
+                  : ui.askButtonActive
+              }`}
+            >
+              {loading ? "..." : "Ask"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </PageWrapper>
   );
 };
 

@@ -12,7 +12,17 @@ const generateToken = (id) => {
 // Register
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, avatar } = req.body;
+    const name = req.body.name?.trim();
+    const email = req.body.email?.trim().toLowerCase();
+    const { password, avatar } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Name, email, and password are required" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -37,14 +47,23 @@ export const registerUser = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    res.status(500).json({ message: "Registration failed" });
   }
 };
 
 // Login
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const { password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
 
     const user = await User.findOne({ email });
 
@@ -60,6 +79,6 @@ export const loginUser = async (req, res) => {
       res.status(401).json({ message: "Invalid credentials" });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Login failed" });
   }
 };

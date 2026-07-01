@@ -8,10 +8,14 @@ API.interceptors.request.use((req) => {
   const userInfo = localStorage.getItem("userInfo");
 
   if (userInfo) {
-    const parsed = JSON.parse(userInfo);
+    try {
+      const parsed = JSON.parse(userInfo);
 
-    if (parsed.token) {
-      req.headers.Authorization = `Bearer ${parsed.token}`;
+      if (parsed.token) {
+        req.headers.Authorization = `Bearer ${parsed.token}`;
+      }
+    } catch {
+      localStorage.removeItem("userInfo");
     }
   }
 

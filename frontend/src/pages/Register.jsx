@@ -1,80 +1,115 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 import API from "../services/api";
+import Logo from "../components/Logo";
+
+import { ui } from "../styles/ui";
 
 const Register = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError("");
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleRegister = async () => {
     try {
-      const { data } = await API.post("/auth/register", form);
+      await API.post("/auth/register", {
+        name,
+        email,
+        password,
+      });
 
-      // ✅ save token
-      localStorage.setItem("userInfo", JSON.stringify(data));
-
-      // ✅ redirect
-      navigate("/");
+      navigate("/login");
     } catch (err) {
-      console.error(err);
-      alert("Registration failed");
+      setError(
+        err.response?.data?.message || "Registration failed. Try again.",
+      );
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-      <div className="bg-gray-800 p-6 rounded-xl w-80">
-        <h1 className="text-2xl font-bold mb-4 text-center">
-          Register
-        </h1>
+    <div className={ui.authContainer}>
+      {/* Background Glow */}
 
-        <input
-          type="text"
-          name="name"
-          placeholder="Name"
-          className="w-full p-2 mb-3 rounded bg-gray-700"
-          onChange={handleChange}
-        />
+      <div className={ui.authGlowLeft} />
+      <div className={ui.authGlowRight} />
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          className="w-full p-2 mb-3 rounded bg-gray-700"
-          onChange={handleChange}
-        />
+      <form onSubmit={handleRegister} className={ui.authCard}>
+        {/* Logo */}
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          className="w-full p-2 mb-3 rounded bg-gray-700"
-          onChange={handleChange}
-        />
+        <div className={ui.authLogo}>
+          <Logo center size="large" />
+        </div>
 
-        <button
-          onClick={handleRegister}
-          className="w-full bg-blue-500 py-2 rounded hover:bg-blue-600"
-        >
+        <h2 className={`${ui.cardTitle} text-center`}>Create Account</h2>
+
+        {/* Name */}
+
+        <div>
+          <label className={ui.label}>Name</label>
+
+          <input
+            type="text"
+            placeholder="Enter your name"
+            className={ui.input}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+
+        {/* Email */}
+
+        <div>
+          <label className={ui.label}>Email</label>
+
+          <input
+            type="email"
+            placeholder="Enter your email"
+            className={ui.input}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+
+        {/* Password */}
+
+        <div>
+          <label className={ui.label}>Password</label>
+
+          <input
+            type="password"
+            placeholder="Enter your password"
+            className={ui.input}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+
+        {/* Error */}
+
+        {error && <div className={ui.error}>{error}</div>}
+
+        {/* Register Button */}
+
+        <button type="submit" className={ui.authButton}>
           Register
         </button>
 
-        <p className="text-sm mt-3 text-center">
+        {/* Footer */}
+
+        <p className={ui.authFooter}>
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-400">
+          <span className={ui.authLink} onClick={() => navigate("/login")}>
             Login
-          </Link>
+          </span>
         </p>
-      </div>
+      </form>
     </div>
   );
 };

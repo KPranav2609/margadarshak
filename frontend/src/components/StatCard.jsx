@@ -1,8 +1,13 @@
-const StatCard = ({ title, value, color }) => {
+import { ui } from "../styles/ui";
+
+const StatCard = ({ title, value, color = "" }) => {
   return (
-    <div className="bg-gray-800 p-4 rounded-xl shadow">
-      <h2 className="text-sm text-gray-400">{title}</h2>
-      <p className={`text-2xl font-bold ${color || "text-white"}`}>
+    <div className={`${ui.statCard} ${ui.hoverCardLarge}`}>
+      <h2 className={ui.muted}>
+        {title}
+      </h2>
+
+      <p className={`text-3xl font-bold mt-2 ${color}`}>
         {value}
       </p>
     </div>

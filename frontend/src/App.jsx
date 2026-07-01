@@ -7,56 +7,52 @@ import TaskPage from "./pages/TaskPage";
 import Mentor from "./pages/Mentor";
 import Layout from "./components/Layout";
 
-// 🔐 Protected Route
-const PrivateRoute = ({ children }) => {
-  const user = JSON.parse(localStorage.getItem("userInfo"));
-  return user ? children : <Navigate to="/login" />;
-};
+import ProtectedRoute from "./routes/ProtectedRoute"; // ✅ USE THIS
 
 function App() {
   return (
     <Router>
       <Routes>
 
-        {/* ✅ Public Routes (NO sidebar) */}
+        {/* PUBLIC ROUTES */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* ✅ Protected Routes (WITH sidebar) */}
+        {/* PROTECTED ROUTES */}
         <Route
           path="/"
           element={
-            <PrivateRoute>
+            <ProtectedRoute>
               <Layout>
                 <Dashboard />
               </Layout>
-            </PrivateRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/tasks"
           element={
-            <PrivateRoute>
+            <ProtectedRoute>
               <Layout>
                 <TaskPage />
               </Layout>
-            </PrivateRoute>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/mentor"
           element={
-            <PrivateRoute>
+            <ProtectedRoute>
               <Layout>
                 <Mentor />
               </Layout>
-            </PrivateRoute>
+            </ProtectedRoute>
           }
         />
 
-        {/* ✅ Default Redirect */}
+        {/* DEFAULT REDIRECT */}
         <Route path="*" element={<Navigate to="/login" />} />
 
       </Routes>

@@ -1,5 +1,6 @@
 import Task from "../models/Task.js";
 import UserTask from "../models/UserTask.js";
+import mongoose from "mongoose";
 
 // @desc Get all tasks
 export const getTasks = async (req, res) => {
@@ -32,21 +33,35 @@ export const completeTask = async (req, res) => {
   try {
     const { taskId } = req.body;
 
-    let userTask = await UserTask.findOne({
-      user: req.user._id,
-      task: taskId,
-    });
+    if (!mongoose.Types.ObjectId.isValid(taskId)) {
+      return res.status(400).json({ message: "Invalid task id" });
+    }
 
-    if (!userTask) {
-      userTask = await UserTask.create({
+    const task = await Task.findById(taskId).select("_id");
+
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    await UserTask.findOneAndUpdate(
+      {
         user: req.user._id,
         task: taskId,
-        completed: true,
-      });
-    } else {
-      userTask.completed = true;
-      await userTask.save();
-    }
+      },
+      {
+        $set: {
+          completed: true,
+        },
+        $setOnInsert: {
+          completedAt: new Date(),
+        },
+      },
+      {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true,
+      },
+    );
 
     res.json({ message: "Task completed" });
   } catch (error) {
