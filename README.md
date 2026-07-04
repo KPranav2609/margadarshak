@@ -272,16 +272,16 @@ VITE_API_URL=http://localhost:5000/api
 # Login
 <img width="1917" height="1060" alt="image" src="https://github.com/user-attachments/assets/7bf46397-8a28-425a-bce8-2f2121186920" />
 
-#sign up
+# Sign up
 <img width="1916" height="906" alt="image" src="https://github.com/user-attachments/assets/17d2334a-6985-40ca-b125-0731a79f3e04" />
 
-#dashboard
+# Dashboard
 <img width="1917" height="942" alt="image" src="https://github.com/user-attachments/assets/ab64fc55-07b8-4b06-a2c8-c8ef80fd733e" />
 
-#tasks
+# Tasks
 <img width="1917" height="979" alt="image" src="https://github.com/user-attachments/assets/e706fc9b-a189-4c9d-8a87-622ed07404dd" />
 
-#mentor
+# Mentor
 <img width="1918" height="940" alt="image" src="https://github.com/user-attachments/assets/bc0fcbc6-7505-485b-8bab-596456d9d79a" />
 
 ---
