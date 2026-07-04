@@ -254,7 +254,7 @@ JWT_SECRET=your_secret_key
 
 OPENROUTER_API_KEY=your_api_key
 
-CLIENT_URL=http://localhost:5173
+CLIENT_URL=https://margadarshak-two.vercel.app
 ```
 
 ---
@@ -262,7 +262,8 @@ CLIENT_URL=http://localhost:5173
 ## Frontend (.env)
 
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=https://margadarshak-backend-jxyh.onrender.com
+
 ```
 
 ---
