@@ -310,16 +310,12 @@ VITE_API_URL=http://localhost:5000/api
 
 # 🔮 Roadmap (Version 2)
 
-- Personalized AI Learning Paths
-- AI-generated Coding Questions
-- AI Resume Review
-- AI Mock Interviews
-- Adaptive Task Recommendations
-- Daily Learning Streaks
-- Achievement Badges
-- Admin Dashboard
-- Leaderboard
-- Email Notifications
+- 🧠 Personalized AI Placement Coach
+- 📅 AI Daily Study Planner
+- 💼 Company-Specific Placement Preparation
+- 💡 Advanced AI Doubt Solver with Step-by-Step Explanations
+- 📚 AI Revision Notes & Topic Summaries
+- 🎯 AI Practice Question Generator
 
 ---
 
