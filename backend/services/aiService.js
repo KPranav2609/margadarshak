@@ -1,80 +1,42 @@
 import axios from "axios";
+import systemPrompt from "../prompts/systemPrompt.js";
 
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const getMentorResponse = async (userStats, userQuery) => {
+export const generateAIResponse = async (prompt) => {
   try {
-    if (!userQuery?.trim()) {
-      return "Please enter a valid question.";
+    if (!prompt?.trim()) {
+      return "Invalid AI prompt.";
     }
 
-    // 🔹 Detect weakest category
-    const categories = Object.keys(userStats.categoryStats || {});
-    if (categories.length === 0) throw new Error("No categories found");
-
-    let weakest = categories[0];
-
-    categories.forEach((cat) => {
-      const currentRatio =
-        userStats.categoryStats[cat].completed /
-        (userStats.categoryStats[cat].total || 1);
-
-      const weakestRatio =
-        userStats.categoryStats[weakest].completed /
-        (userStats.categoryStats[weakest].total || 1);
-
-      if (currentRatio < weakestRatio) {
-        weakest = cat;
-      }
-    });
-
-    // 🔹 Stronger prompt (VERY IMPORTANT)
-    const prompt = `
-You are a strict placement mentor.
-
-User stats:
-- Total: ${userStats.total}
-- Completed: ${userStats.completed}
-- Weak area: ${weakest}
-
-User question:
-${userQuery}
-
-Rules:
-- Give ONLY 3 steps + tips
-- Each step must be short (1 line)
-- No explanations
-- No markdown
-
-Format:
-Step 1:
-Step 2:
-Step 3:
-Tips:
-`;
-
-    // 🔥 Model list (optimized order)
     const models = [
-  "stepfun/step-3.5-flash:free",           // ⚡ fastest (may expire soon)
-  "z-ai/glm-4.5-air:free",                 // 🧠 best structured
-  "arcee-ai/trinity-large-preview:free",   // 🎯 mentor style
-  "nvidia/nemotron-3-super-120b-a12b:free",// 🔥 strong reasoning
-  "openrouter/free"                        // 🧠 auto fallback (IMPORTANT)
-];
+      "z-ai/glm-4.5-air:free",
+      "deepseek/deepseek-chat-v3-0324:free",
+      "nvidia/nemotron-3-super-120b-a12b:free",
+      "arcee-ai/trinity-large-preview:free",
+      "openrouter/free",
+    ];
 
-    let finalResponse = null;
-
-    for (let model of models) {
+    for (const model of models) {
       try {
-        console.log("🧠 Trying:", model);
+        console.log(`🧠 Trying model: ${model}`);
 
         const response = await axios.post(
           "https://openrouter.ai/api/v1/chat/completions",
           {
             model,
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 180,
-            temperature: 0.5,
+            messages: [
+              {
+                role: "system",
+                content: systemPrompt,
+              },
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            max_tokens: 700,
+            temperature: 0.3,
           },
           {
             headers: {
@@ -83,59 +45,38 @@ Tips:
               "HTTP-Referer": "http://localhost:5000",
               "X-Title": "MargaDarshak",
             },
-            timeout: 7000,
+            timeout: 10000,
           }
         );
 
-        const content = response.data?.choices?.[0]?.message?.content;
+        const content = response.data?.choices?.[0]?.message?.content?.trim();
 
-        // 🔥 Strong validation
-        if (
-          content &&
-          content.includes("Step 1") &&
-          content.includes("Step 2") &&
-          content.includes("Step 3")
-        ) {
-          console.log("✅ Success:", model);
-          finalResponse = content.trim();
-          break;
+        if (!content) {
+          console.log(`⚠️ Empty response from ${model}. Trying next model...`);
+          continue;
         }
+
+        console.log(`✅ Response generated using: ${model}`);
+        return content;
 
       } catch (err) {
         const code = err.response?.status;
 
-        console.log(`❌ ${model} failed (${code || "no code"})`);
+        console.log(
+          `❌ ${model} failed | Status: ${code || "Unknown"} | ${
+            err.response?.data?.error?.message || err.message
+          }`
+        );
 
-        if (code === 429) {
-          await delay(1200);
-        } else {
-          await delay(500);
-        }
+        await delay(code === 429 ? 1200 : 500);
       }
     }
 
-    // 🔴 FINAL FALLBACK (clean + structured)
-    if (!finalResponse) {
-      console.log("⚠️ Using fallback response");
-
-      return `Step 1: Focus on your weakest area (${weakest})
-Step 2: Practice 2-3 problems daily
-Step 3: Review mistakes and improve weak concepts
-
-Tips:
-Stay consistent and track your progress daily.`;
-    }
-
-    return finalResponse;
+    return "Sorry, I couldn't generate a response right now. Please try again in a few moments.";
 
   } catch (error) {
-    console.error("🔥 Mentor Error:", error.message);
+    console.error("🔥 AI Service Error:", error.message);
 
-    return `Step 1: Revise fundamentals
-Step 2: Practice regularly
-Step 3: Track your mistakes
-
-Tips:
-Consistency is key to improvement.`;
+    return "Something went wrong while generating the AI response.";
   }
 };
