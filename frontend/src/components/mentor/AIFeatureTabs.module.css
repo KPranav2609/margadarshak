@@ -1,0 +1,62 @@
+.wrapper {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+
+  scrollbar-width: none;
+}
+
+.wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 12px 20px;
+
+  border-radius: 14px;
+
+  border: 1px solid #334155;
+
+  background: rgba(30, 41, 59, 0.6);
+
+  color: #cbd5e1;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+
+  white-space: nowrap;
+
+  font-weight: 500;
+}
+
+.tab:hover {
+  border-color: #3b82f6;
+
+  color: white;
+
+  transform: translateY(-2px);
+}
+
+.active {
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+
+  border-color: #3b82f6;
+
+  color: white;
+
+  box-shadow: 0 8px 30px rgba(37, 99, 235, 0.35);
+}
+
+.icon {
+  font-size: 18px;
+}

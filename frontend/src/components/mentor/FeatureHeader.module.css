@@ -1,0 +1,32 @@
+.wrapper {
+  margin-bottom: 2rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon {
+  font-size: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.description {
+  margin-top: 10px;
+  color: #94a3b8;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.divider {
+  margin-top: 20px;
+  border: none;
+  border-top: 1px solid #334155;
+}

@@ -1,31 +1,65 @@
 import { useState } from "react";
-import API from "../services/api";
+import {
+  askCompanyPreparation,
+  askPlacementCoach,
+  askPractice,
+  askRevision,
+  askStudyPlanner,
+} from "../services/aiService";
 
 const useMentor = () => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState("");
 
-  const askMentor = async (question) => {
-    if (!question.trim() || loading) return;
+  const submitMentorRequest = async (request) => {
+    if (loading) return;
 
     try {
       setLoading(true);
       setResponse("");
 
-      const { data } = await API.post("/ai/ask", {
-        question,
-      });
+      const data = await request();
+
+      if (!data?.success) {
+        setResponse(data?.message || "Something went wrong. Try again.");
+        return;
+      }
 
       setResponse(data.response);
     } catch (err) {
       console.error(err);
-      setResponse("Something went wrong. Try again.");
+      setResponse(
+        err.response?.data?.message || "Something went wrong. Try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  return { askMentor, response, loading };
+  const placementCoach = (payload) =>
+    submitMentorRequest(() => askPlacementCoach(payload));
+
+  const studyPlanner = (payload) =>
+    submitMentorRequest(() => askStudyPlanner(payload));
+
+  const companyPreparation = (payload) =>
+    submitMentorRequest(() => askCompanyPreparation(payload));
+
+  const revisionGenerator = (payload) =>
+    submitMentorRequest(() => askRevision(payload));
+
+  const practiceGenerator = (payload) =>
+    submitMentorRequest(() => askPractice(payload));
+
+  return {
+    placementCoach,
+    studyPlanner,
+    companyPreparation,
+    revisionGenerator,
+    practiceGenerator,
+    response,
+    loading,
+  };
 };
 
 export default useMentor;

@@ -1,0 +1,90 @@
+.wrapper {
+  margin-top: 2rem;
+}
+
+.card {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid #334155;
+  border-radius: 18px;
+  padding: 24px;
+}
+
+.input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: #1e293b;
+  color: white;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 140px;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: #1e293b;
+  color: white;
+  resize: vertical;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.twoColumnGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.threeColumnGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.buttonRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.button {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.button:hover {
+  background: #1d4ed8;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .twoColumnGrid,
+  .threeColumnGrid {
+    grid-template-columns: 1fr;
+  }
+}

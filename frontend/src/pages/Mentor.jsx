@@ -3,185 +3,188 @@ import { useState } from "react";
 import useMentor from "../hooks/useMentor";
 
 import PageWrapper from "../components/PageWrapper";
-import SkeletonCard from "../components/SkeletonCard";
 
-import { ui } from "../styles/ui";
+import AIFeatureTabs from "../components/mentor/AIFeatureTabs";
+import FeatureHeader from "../components/mentor/FeatureHeader";
+import MentorInput from "../components/mentor/MentorInput";
+import MentorResponse from "../components/mentor/MentorResponse";
+
+import styles from "./Mentor.module.css";
 
 const Mentor = () => {
+  const [selectedFeature, setSelectedFeature] = useState("placement");
+
   const [question, setQuestion] = useState("");
+  const [company, setCompany] = useState("");
+  const [topic, setTopic] = useState("");
 
-  const { askMentor, response, loading } = useMentor();
+  const [difficulty, setDifficulty] = useState("Easy");
+  const [count, setCount] = useState(5);
 
-  const quickPrompts = [
-    "Explain Binary Search",
-    "How do I prepare for DBMS interview?",
-    "Explain JWT Authentication",
-    "Top HR Interview Questions",
-  ];
+  const [days, setDays] = useState(30);
+  const [hoursPerDay, setHoursPerDay] = useState(3);
+
+  const {
+    placementCoach,
+    studyPlanner,
+    companyPreparation,
+    revisionGenerator,
+    practiceGenerator,
+    response,
+    loading,
+  } = useMentor();
 
   const parseResponse = (text) => {
-    const steps = {
+    const result = {
       step1: "",
       step2: "",
       step3: "",
       tips: "",
     };
 
-    if (!text) return steps;
+    if (!text) return result;
 
-    let currentSection = "";
+    let current = "";
 
     text.split("\n").forEach((line) => {
       const trimmed = line.trim();
+
       if (!trimmed) return;
 
       const stepMatch = trimmed.match(/^step\s*([123])[:-]?\s*(.*)$/i);
       const tipsMatch = trimmed.match(/^tips[:-]?\s*(.*)$/i);
 
       if (stepMatch) {
-        currentSection = `step${stepMatch[1]}`;
-        steps[currentSection] = stepMatch[2];
+        current = `step${stepMatch[1]}`;
+        result[current] = stepMatch[2];
         return;
       }
 
       if (tipsMatch) {
-        currentSection = "tips";
-        steps.tips = tipsMatch[1];
+        current = "tips";
+        result.tips = tipsMatch[1];
         return;
       }
 
-      if (currentSection) {
-        steps[currentSection] = `${steps[currentSection]} ${trimmed}`.trim();
+      if (current) {
+        result[current] = `${result[current]} ${trimmed}`.trim();
       }
     });
 
-    return steps;
+    return result;
   };
 
   const parsed = parseResponse(response);
 
-  const handleAsk = () => {
-    if (!question.trim()) return;
+ const handleAsk = () => {
+  switch (selectedFeature) {
+    case "placement":
+      if (!question.trim()) return;
 
-    askMentor(question);
-    setQuestion("");
-  };
+      placementCoach({ question });
+      break;
+
+    case "study":
+      if (!question.trim()) return;
+
+      studyPlanner({
+        question: `${question.trim()} Prepare this for ${Number(
+          days
+        )} days with ${Number(hoursPerDay)} hours per day.`,
+      });
+      break;
+
+    case "company":
+      if (!company.trim()) return;
+
+      companyPreparation({
+        company,
+        question:
+          question.trim() ||
+          `Create a focused preparation strategy for ${company}.`,
+      });
+      break;
+
+    case "revision":
+      if (!topic.trim()) return;
+
+      revisionGenerator({
+        topic,
+        question:
+          question.trim() ||
+          `Create concise interview revision notes for ${topic}.`,
+      });
+      break;
+
+    case "practice":
+      if (!topic.trim()) return;
+
+      practiceGenerator({
+        topic,
+        difficulty,
+        count: Number(count),
+        question:
+          question.trim() ||
+          `Generate ${Number(count)} ${difficulty} interview practice questions for ${topic}.`,
+      });
+      break;
+
+    default:
+      return;
+  }
+
+  setQuestion("");
+};
 
   return (
     <PageWrapper>
-      <div className={ui.chatContainer}>
-        {/* Header */}
+      <div className={styles.container}>
+        {/* Page Header */}
 
-        <div className="mb-5">
-          <h1 className={ui.pageTitle}>
-            AI Mentor
-          </h1>
+        <div className={styles.header}>
+          <h1 className={styles.title}>🤖 AI Placement Assistant</h1>
 
-          <p className={ui.pageSubtitle}>
-            Ask anything and get step-by-step guidance 🚀
+          <p className={styles.subtitle}>
+            Personalized AI tools powered by your placement progress.
           </p>
         </div>
 
-        {/* Quick Prompts */}
+        {/* Feature Tabs */}
 
-        <div className="flex flex-wrap gap-3 mb-5">
-          {quickPrompts.map((prompt) => (
-            <button
-              key={prompt}
-              className={ui.quickPrompt}
-              onClick={() => setQuestion(prompt)}
-            >
-              {prompt}
-            </button>
-          ))}
-        </div>
+        <AIFeatureTabs
+          selectedFeature={selectedFeature}
+          onSelect={setSelectedFeature}
+        />
 
-        {/* Chat */}
+        {/* Feature Information */}
 
-        <div className={ui.chatArea}>
-          {!loading && !response && (
-            <div className={ui.mentorWelcome}>
-              👋 Welcome!
+        <FeatureHeader feature={selectedFeature} />
 
-              <br />
-              <br />
+        {/* Dynamic Input */}
 
-              Ask me anything about coding,
-              interviews, aptitude or placement
-              preparation.
-            </div>
-          )}
+        <MentorInput
+          selectedFeature={selectedFeature}
+          question={question}
+          setQuestion={setQuestion}
+          company={company}
+          setCompany={setCompany}
+          topic={topic}
+          setTopic={setTopic}
+          difficulty={difficulty}
+          setDifficulty={setDifficulty}
+          count={count}
+          setCount={setCount}
+          days={days}
+          setDays={setDays}
+          hoursPerDay={hoursPerDay}
+          setHoursPerDay={setHoursPerDay}
+          loading={loading}
+          handleAsk={handleAsk}
+        />
 
-          {loading && (
-            <>
-              <SkeletonCard className="h-24 w-full" />
-              <SkeletonCard className="h-24 w-5/6" />
-              <SkeletonCard className="h-20 w-4/6" />
-            </>
-          )}
+        {/* AI Response */}
 
-          {[parsed.step1, parsed.step2, parsed.step3].map(
-            (step, index) =>
-              step && (
-                <div
-                  key={index}
-                  className={ui.mentorCard}
-                >
-                  <h3 className={ui.stepTitle}>
-                    Step {index + 1}
-                  </h3>
-
-                  <p className="mt-2">
-                    {step}
-                  </p>
-                </div>
-              )
-          )}
-
-          {parsed.tips && (
-            <div className={ui.tipsCard}>
-              <h3 className={ui.tipsTitle}>
-                💡 Tips
-              </h3>
-
-              <p className="mt-2">
-                {parsed.tips}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Input */}
-
-        <div className="mt-5">
-          <div className={ui.glassInput}>
-            <textarea
-              rows="1"
-              value={question}
-              placeholder="Ask your doubt..."
-              className={ui.textarea}
-              onChange={(e) => setQuestion(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleAsk();
-                }
-              }}
-            />
-
-            <button
-              onClick={handleAsk}
-              disabled={loading}
-              className={`${ui.askButton} ${
-                loading
-                  ? ui.askButtonLoading
-                  : ui.askButtonActive
-              }`}
-            >
-              {loading ? "..." : "Ask"}
-            </button>
-          </div>
-        </div>
+        <MentorResponse loading={loading} response={response} parsed={parsed} />
       </div>
     </PageWrapper>
   );
