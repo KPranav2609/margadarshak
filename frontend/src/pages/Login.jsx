@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -14,7 +14,11 @@ const Login = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -27,7 +31,7 @@ const Login = () => {
       });
 
       login(data);
-      navigate("/");
+      navigate("/", { replace: true });
     } catch {
       setError("Invalid email or password");
     }

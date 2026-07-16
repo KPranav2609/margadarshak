@@ -53,7 +53,7 @@ function App() {
         />
 
         {/* DEFAULT REDIRECT */}
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>
     </Router>

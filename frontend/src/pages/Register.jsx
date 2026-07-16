@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 import API from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import Logo from "../components/Logo";
 
 import { ui } from "../styles/ui";
@@ -13,19 +14,25 @@ const Register = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  const { login, user } = useAuth();
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      await API.post("/auth/register", {
+      const { data } = await API.post("/auth/register", {
         name,
         email,
         password,
       });
 
-      navigate("/login");
+      login(data);
+      navigate("/", { replace: true });
     } catch (err) {
       setError(
         err.response?.data?.message || "Registration failed. Try again.",
