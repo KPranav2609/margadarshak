@@ -16,9 +16,30 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 const DB_CONNECT_TIMEOUT_MS = Number(process.env.DB_CONNECT_TIMEOUT_MS) || 15000;
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.CORS_ORIGIN,
+  ...(process.env.CLIENT_URLS || "").split(","),
+]
+  .map((origin) => origin?.trim())
+  .filter(Boolean);
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)
+    ) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
+  },
+};
 
 app.use(express.json({ limit: "1mb" }));
-app.use(cors({ origin: process.env.CLIENT_URL || true }));
+app.use(cors(corsOptions));
 
 app.get("/", (req, res) => {
   res.send("MargaDarshak API Running");
